@@ -1,0 +1,24 @@
+WITH Total_payroll_per_year_per_industry AS (
+SELECT 
+	cpib.name AS "Industry",
+	cp.payroll_year AS 'Payroll_year',
+	SUM(cp.value) AS 'Total_payroll' 
+FROM czechia_payroll cp
+	JOIN czechia_payroll_value_type cpvt 
+		ON cp.value_type_code = cpvt.code 
+	JOIN czechia_payroll_industry_branch cpib 
+		ON cp.industry_branch_code = cpib.code
+WHERE cpvt.code = 5958
+GROUP BY cpib.name, cp.payroll_year
+)
+SELECT tab1.industry, tab1.payroll_year, tab1.total_payroll,
+	ROUND((tab1.total_payroll - tab2.total_payroll) / tab2.total_payroll * 100, 2) AS "Annual_growt",
+	CASE 
+		WHEN ROUND((tab1.total_payroll - tab2.total_payroll) / tab2.total_payroll * 100, 2) > 0 THEN 'positive'
+		ELSE "negative"
+	END AS "Result"
+FROM Total_payroll_per_year_per_industry tab1
+	JOIN Total_payroll_per_year_per_industry tab2 
+		ON tab1.industry = tab2.industry
+		AND tab1.payroll_year = tab2.payroll_year + 1
+ORDER BY result ;
