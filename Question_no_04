@@ -1,0 +1,33 @@
+WITH Temporary_average_price AS (
+SELECT
+	cpc.name AS "Category",
+	YEAR (cp.date_from) AS "Year",
+	AVG(cp.value) AS "Average_price"
+FROM czechia_price cp
+	JOIN czechia_price_category cpc ON cp.category_code = cpc.code
+GROUP BY YEAR (cp.date_from)
+)
+SELECT tap.YEAR AS "Year", tap.Average_price AS "Average_price",
+	round ((tap.average_price - tap2.average_price) / tap2.average_price * 100, 2) AS "Annual_price_change"
+FROM Temporary_average_price tap
+	JOIN Temporary_average_price tap2 
+		ON tap.category = tap2.category
+		AND tap.YEAR = tap2.YEAR + 1;
+    
+WITH Teporary_average_salary AS (
+SELECT 
+	payroll_quarter,
+	AVG(value) AS "Average_salary", 
+	payroll_year
+FROM czechia_payroll 
+WHERE value_type_code = 5958 
+	AND payroll_year >= 2006 
+	AND payroll_year <= 2018
+GROUP BY payroll_year
+)
+SELECT tas.average_salary, tas.payroll_year,
+	ROUND((tas.average_salary - tas2.average_salary) / tas2.average_salary * 100, 2) AS "Annual_salary_change" 
+FROM Teporary_average_salary tas
+	JOIN Teporary_average_salary tas2 
+		ON tas.payroll_quarter = tas2.payroll_quarter
+		AND tas.payroll_year = tas2.payroll_year + 1;
