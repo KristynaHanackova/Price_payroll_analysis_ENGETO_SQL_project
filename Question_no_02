@@ -1,0 +1,27 @@
+SELECT *
+FROM czechia_price_category 
+WHERE name LIKE '%mléko%' OR name LIKE '%chléb%';
+
+SELECT 
+	cpc.name AS "Grocery",	
+	AVG(cp.value) AS "Price", 
+	YEAR (cp.date_from) AS "Year"
+FROM czechia_price cp 
+	JOIN czechia_price_category cpc ON cp.category_code = cpc.code 
+WHERE cp.category_code = 114201
+GROUP BY YEAR (cp.date_from)
+ORDER BY cp.date_from;
+
+SELECT 
+	AVG(value) AS "Average_salary", 
+	value_type_code, 
+	payroll_year
+FROM czechia_payroll 
+WHERE value_type_code = 5958 AND payroll_year = 2018
+GROUP BY payroll_year 
+ORDER BY payroll_year DESC;
+
+SELECT 20677/14.44;
+SELECT 32485/19.82; 
+SELECT 20677/15.28; 
+SELECT 32485/22.03; 
