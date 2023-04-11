@@ -1,3 +1,9 @@
+CREATE TABLE t_kristyna_hanackova_project_SQL_secondary_final
+SELECT e.country, e.GDP, e.gini, e.population, c.region_in_world 
+FROM economies e
+	LEFT JOIN countries c ON e.country = c.country
+WHERE c.region_in_world LIKE %Europe%;
+
 -- GDP --
 SELECT e.country, e.year, e.GDP,
 	ROUND ((e.GDP - e2.GDP) / e2.GDP * 100, 2) AS "Annual_GDP_change"
