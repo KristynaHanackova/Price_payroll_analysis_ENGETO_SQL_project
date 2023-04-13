@@ -1,18 +1,19 @@
-WITH Average_price_per_food_category_per_year AS (
+WITH tabulka AS (
 SELECT 
-	cpc.name AS "Category",
-	ROUND( AVG(cp.value), 2) AS "Average_price",
-	YEAR (cp.date_from) AS "Year"
-FROM czechia_price cp
-	JOIN czechia_price_category cpc ON cp.category_code = cpc.code 
-GROUP BY cpc.name, YEAR (cp.date_from)
-ORDER BY cpc.name
-) 
-SELECT tab01.category, tab01.average_price, tab01.YEAR,
-	ROUND (SUM((tab01.average_price - tab02.average_price) / tab02.average_price * 100), 2) AS "Total_annual_growth"
-FROM Average_price_per_food_category_per_year tab01
-	JOIN Average_price_per_food_category_per_year tab02 
-		ON tab01.category = tab02.category
-		AND tab01.YEAR = tab02.YEAR + 1
-GROUP BY tab01.category
-ORDER BY Total_annual_growth;
+	name, 
+	AVG_price, 
+	price_year 
+FROM t_kristyna_hanackova_project_sql_primary_final tkhpspf 
+GROUP BY price_year, name 
+ORDER BY name, price_year 
+)
+SELECT 
+	tab.name, 
+	tab.AVG_price, 
+	tab.price_year, 
+	sum(round((tab.AVG_price - tab2.AVG_price) / tab2.AVG_price * 100, 2)) AS total_annual_change
+FROM tabulka tab
+	JOIN tabulka tab2 ON tab.name = tab2.name
+	AND tab.price_year = tab2.price_year + 1 
+GROUP BY tab.name
+ORDER BY total_annual_change
