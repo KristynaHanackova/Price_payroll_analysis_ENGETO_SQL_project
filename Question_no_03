@@ -10,7 +10,6 @@ ORDER BY name, price_year
 SELECT 
 	tab.name, 
 	tab.AVG_price, 
-	tab.price_year, 
 	sum(round((tab.AVG_price - tab2.AVG_price) / tab2.AVG_price * 100, 2)) AS total_annual_change
 FROM tabulka tab
 	JOIN tabulka tab2 ON tab.name = tab2.name
