@@ -1,54 +1,19 @@
-CREATE TABLE t_kristyna_hanackova_project_SQL_secondary_final
-SELECT e.country, e.GDP, e.gini, e.population, c.region_in_world 
-FROM economies e
-	LEFT JOIN countries c ON e.country = c.country
-WHERE c.region_in_world LIKE %Europe%;
-
--- GDP --
-SELECT e.country, e.year, e.GDP,
-	ROUND ((e.GDP - e2.GDP) / e2.GDP * 100, 2) AS "Annual_GDP_change"
-FROM economies e 
-JOIN economies e2 
-    ON e.country = e2.country 
-    AND e.year = e2.year + 1
-WHERE e.country LIKE "%czech%"
- 	AND e.YEAR >= 2006
- 	AND e.YEAR <= 2018
-GROUP BY e.YEAR
-ORDER BY annual_GDP_change DESC;
-
--- salaries --
-WITH Teporary_average_salary AS (
+WITH tabulka AS (
 SELECT 
-	payroll_quarter,
-	AVG(value) AS "Average_salary", 
-	payroll_year
-FROM czechia_payroll 
-WHERE value_type_code = 5958 
-	AND payroll_year >= 2006 
-	AND payroll_year <= 2018
-GROUP BY payroll_year
+	tabs.country, 
+	tabs.`year`, 
+	round(tabs.GDP, 0) AS GDP,
+	tabp.payroll_year, 
+	ROUND(AVG(tabp.AVG_payroll), 2) AS payroll,
+	ROUND(AVG (tabp.AVG_price), 2) AS price
+FROM t_kristyna_hanackova_project_sql_secondary_final tabs 
+	JOIN t_kristyna_hanackova_project_sql_primary_final tabp ON tabs.`year` = tabp.payroll_year 
+WHERE tabs.country LIKE '%czech%'
+GROUP BY tabp.payroll_year 
 )
-SELECT tas.average_salary, tas.payroll_year,
-	ROUND((tas.average_salary - tas2.average_salary) / tas2.average_salary * 100, 2) AS "Annual_salary_change" 
-FROM Teporary_average_salary tas
-	JOIN Teporary_average_salary tas2 
-		ON tas.payroll_quarter = tas2.payroll_quarter
-		AND tas.payroll_year = tas2.payroll_year + 1;
-    
--- prices --
-WITH Temporary_average_price AS (
-SELECT
-	cpc.name AS "Category",
-	YEAR (cp.date_from) AS "Year",
-	AVG(cp.value) AS "Average_price"
-FROM czechia_price cp
-	JOIN czechia_price_category cpc ON cp.category_code = cpc.code
-GROUP BY YEAR (cp.date_from)
-)
-SELECT tap.YEAR AS "Year", tap.Average_price AS "Average_price",
-	round ((tap.average_price - tap2.average_price) / tap2.average_price * 100, 2) AS "Annual_price_change"
-FROM Temporary_average_price tap
-	JOIN Temporary_average_price tap2 
-		ON tap.category = tap2.category
-		AND tap.YEAR = tap2.YEAR + 1;
+SELECT tab.country, tab.YEAR, tab. GDP, tab.payroll, tab.price,
+	round((tab.GDP - tab2.GDP) / tab2.GDP * 100, 2) AS GDP_annual_change,
+	round((tab.payroll - tab2.payroll) / tab2.payroll * 100, 2) AS payroll_annual_change,
+	round((tab.price - tab2.price) / tab2.price * 100, 2) AS price_annual_change
+FROM tabulka tab
+	JOIN tabulka tab2 ON tab.YEAR = tab2.YEAR + 1
